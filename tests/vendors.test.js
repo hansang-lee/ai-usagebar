@@ -7,7 +7,7 @@ describe('VENDOR_IDS — canonical order', () => {
     it('lists vendors in fixed order', () =>
         assertDeepEqual(
             [...VENDOR_IDS],
-            ['anthropic', 'openai', 'zai', 'openrouter', 'deepseek', 'kimi']
+            ['anthropic', 'openai', 'zai', 'openrouter', 'deepseek', 'kimi', 'gemini']
         ));
     it('is frozen', () => assertEqual(Object.isFrozen(VENDOR_IDS), true));
 });
@@ -19,23 +19,23 @@ describe('VENDOR_LABELS', () => {
     it('is ordered to match VENDOR_IDS', () =>
         assertDeepEqual(
             [...VENDOR_LABELS],
-            ['Anthropic', 'OpenAI', 'Z.AI', 'OpenRouter', 'DeepSeek', 'Kimi']
+            ['Anthropic', 'OpenAI', 'Z.AI', 'OpenRouter', 'DeepSeek', 'Kimi', 'Gemini']
         ));
 });
 
 describe('isVendorId', () => {
-    it('accepts a known id', () => assertEqual(isVendorId('zai'), true));
-    it('rejects an unknown id', () => assertEqual(isVendorId('gemini'), false));
+    it('accepts a known id', () => assertEqual(isVendorId('gemini'), true));
+    it('rejects an unknown id', () => assertEqual(isVendorId('unknown_ai'), false));
     it('rejects non-strings', () => assertEqual(isVendorId(null), false));
 });
 
 describe('vendorLabel', () => {
     it('maps a known id to its display name', () =>
-        assertEqual(vendorLabel('anthropic'), 'Anthropic'));
+        assertEqual(vendorLabel('gemini'), 'Gemini'));
     it('maps each id to its aligned label', () =>
         assertDeepEqual(VENDOR_IDS.map(vendorLabel), [...VENDOR_LABELS]));
     it('falls back to the id for an unknown vendor', () =>
-        assertEqual(vendorLabel('gemini'), 'gemini'));
+        assertEqual(vendorLabel('unknown_ai'), 'unknown_ai'));
 });
 
 system.exit(summary());

@@ -8,6 +8,9 @@
   "settings-schema": "org.gnome.shell.extensions.ai-usagebar",
   "gettext-domain": "ai-usagebar@wilfison",
   "shell-version": [
+    "46",
+    "47",
+    "48",
     "50"
   ]
 }
