@@ -99,6 +99,13 @@
       <description>Path to the Claude credentials file. Empty uses ~/.claude/.credentials.json.</description>
     </key>
 
+    <key name="anthropic-refresh-interval" type="i">
+      <default>0</default>
+      <range min="0" max="86400"/>
+      <summary>Anthropic refresh interval in seconds</summary>
+      <description>Per-vendor refresh interval in seconds. 0 uses the global refresh interval.</description>
+    </key>
+
     <key name="openai-enabled" type="b">
       <default>true</default>
       <summary>Enable OpenAI</summary>
@@ -115,6 +122,13 @@
       <default>'OPENAI_ADMIN_KEY'</default>
       <summary>OpenAI admin key environment variable</summary>
       <description>Name of the environment variable holding the OpenAI admin key for the API-key fallback path.</description>
+    </key>
+
+    <key name="openai-refresh-interval" type="i">
+      <default>0</default>
+      <range min="0" max="86400"/>
+      <summary>OpenAI refresh interval in seconds</summary>
+      <description>Per-vendor refresh interval in seconds. 0 uses the global refresh interval.</description>
     </key>
 
     <key name="zai-enabled" type="b">
@@ -141,6 +155,13 @@
       <description>Display-only plan tier label (e.g. lite/pro/max). Empty means unset.</description>
     </key>
 
+    <key name="zai-refresh-interval" type="i">
+      <default>0</default>
+      <range min="0" max="86400"/>
+      <summary>Z.AI refresh interval in seconds</summary>
+      <description>Per-vendor refresh interval in seconds. 0 uses the global refresh interval.</description>
+    </key>
+
     <key name="openrouter-enabled" type="b">
       <default>true</default>
       <summary>Enable OpenRouter</summary>
@@ -157,6 +178,13 @@
       <default>''</default>
       <summary>OpenRouter inline API key</summary>
       <description>Inline OpenRouter API key used when the environment variable is unset. Empty means none.</description>
+    </key>
+
+    <key name="openrouter-refresh-interval" type="i">
+      <default>0</default>
+      <range min="0" max="86400"/>
+      <summary>OpenRouter refresh interval in seconds</summary>
+      <description>Per-vendor refresh interval in seconds. 0 uses the global refresh interval.</description>
     </key>
 
     <key name="deepseek-enabled" type="b">
@@ -177,6 +205,13 @@
       <description>Inline DeepSeek API key used when the environment variable is unset. Empty means none.</description>
     </key>
 
+    <key name="deepseek-refresh-interval" type="i">
+      <default>0</default>
+      <range min="0" max="86400"/>
+      <summary>DeepSeek refresh interval in seconds</summary>
+      <description>Per-vendor refresh interval in seconds. 0 uses the global refresh interval.</description>
+    </key>
+
     <key name="kimi-enabled" type="b">
       <default>false</default>
       <summary>Enable Kimi</summary>
@@ -195,6 +230,13 @@
       <description>Inline Kimi API key used when the environment variable is unset. Empty means none.</description>
     </key>
 
+    <key name="kimi-refresh-interval" type="i">
+      <default>0</default>
+      <range min="0" max="86400"/>
+      <summary>Kimi refresh interval in seconds</summary>
+      <description>Per-vendor refresh interval in seconds. 0 uses the global refresh interval.</description>
+    </key>
+
     <key name="gemini-enabled" type="b">
       <default>true</default>
       <summary>Enable Gemini</summary>
@@ -211,6 +253,13 @@
       <default>''</default>
       <summary>Gemini inline API key</summary>
       <description>Inline Gemini API key used when the environment variable is unset.</description>
+    </key>
+
+    <key name="gemini-refresh-interval" type="i">
+      <default>0</default>
+      <range min="0" max="86400"/>
+      <summary>Gemini refresh interval in seconds</summary>
+      <description>Per-vendor refresh interval in seconds. 0 uses the global refresh interval.</description>
     </key>
 
   </schema>

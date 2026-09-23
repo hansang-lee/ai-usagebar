@@ -10,7 +10,7 @@ import * as PanelMenu from 'resource:///org/gnome/shell/ui/panelMenu.js';
 import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
 
 import {Cache} from '../lib/cache.js';
-import {readConfig} from '../lib/config.js';
+import {readConfig, vendorRefreshIntervalSecs} from '../lib/config.js';
 import {normalizeActive, cycleVendor, enabledVendors, isEnabled} from '../lib/config-resolve.js';
 import {writeActiveVendorMirror} from '../lib/active-vendor.js';
 import {request, disposeSession} from '../lib/http.js';
@@ -74,7 +74,7 @@ class Indicator extends PanelMenu.Button {
         this._cache = Cache.forVendor(this._adapter.cacheId);
         this._theme = defaultTheme();
         this._rebuildTheme();
-        this._timeoutId = null;
+        this._pollTimeouts = new Map(); // vendorId -> timeoutId
         this._renderTimeoutId = null;
         this._openStateId = null;
         this._scrollId = null;
@@ -147,18 +147,25 @@ class Indicator extends PanelMenu.Button {
         // One immediate refresh, then poll. A rejected promise must never escape
         // into the timeout callback / event loop.
         this._refresh().catch(e => console.warn(`ai-usagebar: refresh failed: ${e}`));
-        this._rearmPollTimer(this._config.refreshIntervalSecs);
+        this._rearmVendorPollTimers(this._config);
     }
 
-    _rearmPollTimer(secs) {
-        if (this._timeoutId) {
-            GLib.Source.remove(this._timeoutId);
-            this._timeoutId = null;
+    _rearmVendorPollTimers(config) {
+        // Clear all existing vendor poll timers
+        for (const [id, timeoutId] of this._pollTimeouts) {
+            GLib.Source.remove(timeoutId);
         }
-        this._timeoutId = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, secs, () => {
-            this._refresh().catch(e => console.warn(`ai-usagebar: refresh failed: ${e}`));
-            return GLib.SOURCE_CONTINUE;
-        });
+        this._pollTimeouts.clear();
+
+        const enabled = enabledVendors(config);
+        for (const id of enabled) {
+            const secs = vendorRefreshIntervalSecs(config, id);
+            const timeoutId = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, secs, () => {
+                this._fetchVendor(id).catch(e => console.warn(`ai-usagebar: refresh failed for ${id}: ${e}`));
+                return GLib.SOURCE_CONTINUE;
+            });
+            this._pollTimeouts.set(id, timeoutId);
+        }
     }
 
     _onSettingsChanged(settings, key) {
@@ -180,10 +187,10 @@ class Indicator extends PanelMenu.Button {
 
         const config = readConfig(this._settings);
 
-        // Interval change: re-arm the timer (cadence only, no fetch).
-        if (key === 'refresh-interval') {
+        // Interval change: re-arm the vendor timers (cadence only, no fetch).
+        if (key === 'refresh-interval' || key.endsWith('-refresh-interval')) {
             this._config = config;
-            this._rearmPollTimer(config.refreshIntervalSecs);
+            this._rearmVendorPollTimers(config);
             return;
         }
 
@@ -196,6 +203,7 @@ class Indicator extends PanelMenu.Button {
         this._syncManageSwitches(config);
 
         if (activeChanged || enabledChanged) {
+            this._rearmVendorPollTimers(config);
             this._refresh().catch(e => console.warn(`ai-usagebar: refresh failed: ${e}`));
             return;
         }
@@ -369,6 +377,30 @@ class Indicator extends PanelMenu.Button {
         this._ensureVendorExpanded(activeId);
     }
 
+    async _fetchVendor(id) {
+        if (this._destroyed)
+            return;
+        const adapter = getAdapter(id);
+        const cache = Cache.forVendor(adapter.cacheId);
+        try {
+            const res = await this._runFetch(adapter, {
+                config: this._config,
+                cache,
+                http: request,
+                signal: this._cancellable,
+            });
+            if (this._destroyed)
+                return;
+            this._storeResult(id, res);
+            this._maybeNotify(adapter, cache, res, this._config);
+        } catch (e) {
+            console.warn(`ai-usagebar: fetch failed for ${id}: ${e}`);
+        }
+        if (this._destroyed)
+            return;
+        this._renderMulti();
+    }
+
     async _refresh() {
         this._config = readConfig(this._settings);
         this._barFormat = this._config.barFormat;
@@ -385,27 +417,10 @@ class Indicator extends PanelMenu.Button {
 
         const enabled = enabledVendors(this._config);
         for (const id of enabled) {
-            const adapter = getAdapter(id);
-            const cache = Cache.forVendor(adapter.cacheId);
-            try {
-                const res = await this._runFetch(adapter, {
-                    config: this._config,
-                    cache,
-                    http: request,
-                    signal: this._cancellable,
-                });
-                if (this._destroyed)
-                    return;
-                this._storeResult(id, res);
-                this._maybeNotify(adapter, cache, res, this._config);
-            } catch (e) {
-                console.warn(`ai-usagebar: fetch failed for ${id}: ${e}`);
-            }
+            await this._fetchVendor(id);
+            if (this._destroyed)
+                return;
         }
-
-        if (this._destroyed)
-            return;
-        this._renderMulti();
     }
 
     _renderMulti() {
@@ -703,9 +718,12 @@ class Indicator extends PanelMenu.Button {
     destroy() {
         this._destroyed = true;
 
-        if (this._timeoutId) {
-            GLib.Source.remove(this._timeoutId);
-            this._timeoutId = null;
+        if (this._pollTimeouts) {
+            for (const [id, timeoutId] of this._pollTimeouts) {
+                GLib.Source.remove(timeoutId);
+            }
+            this._pollTimeouts.clear();
+            this._pollTimeouts = null;
         }
         if (this._renderTimeoutId) {
             GLib.Source.remove(this._renderTimeoutId);

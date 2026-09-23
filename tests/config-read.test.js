@@ -6,7 +6,7 @@ import system from 'system';
 // any Gio.Settings is constructed.
 GLib.setenv('GSETTINGS_BACKEND', 'memory', true);
 
-import {readConfig, anthropicCredsPath, codexAuthPath} from '../lib/config.js';
+import {readConfig, anthropicCredsPath, codexAuthPath, vendorRefreshIntervalSecs} from '../lib/config.js';
 import {describe, it, assertEqual, summary} from './_assert.js';
 
 const SCHEMA_ID = 'org.gnome.shell.extensions.ai-usagebar';
@@ -61,6 +61,10 @@ describe('readConfig — schema defaults', () => {
         assertEqual(cfg.vendors.openrouter.apiKeyEnv, 'OPENROUTER_API_KEY'));
     it('deepseek env var name default', () =>
         assertEqual(cfg.vendors.deepseek.apiKeyEnv, 'DEEPSEEK_API_KEY'));
+    it('gemini refresh interval defaults to 0', () =>
+        assertEqual(cfg.vendors.gemini.refreshIntervalSecs, 0));
+    it('vendorRefreshIntervalSecs falls back to global default', () =>
+        assertEqual(vendorRefreshIntervalSecs(cfg, 'gemini'), 300));
     it('anthropicCredsPath falls back to the default path', () =>
         assertEqual(anthropicCredsPath(cfg).endsWith('/.claude/.credentials.json'), true));
     it('codexAuthPath falls back to the default path', () =>
@@ -78,6 +82,7 @@ describe('readConfig — overrides', () => {
     settings.set_string('active-vendor', 'zai');
     settings.set_boolean('show-pace-marker', true);
     settings.set_int('refresh-interval', 600);
+    settings.set_int('gemini-refresh-interval', 15);
     settings.set_boolean('deepseek-enabled', true);
     settings.set_boolean('notify-enabled', true);
     settings.set_int('notify-threshold', 75);
@@ -99,6 +104,12 @@ describe('readConfig — overrides', () => {
     it('honors the active-vendor override', () => assertEqual(cfg.activeVendor, 'zai'));
     it('honors the pace-marker toggle', () => assertEqual(cfg.showPaceMarker, true));
     it('honors the refresh-interval override', () => assertEqual(cfg.refreshIntervalSecs, 600));
+    it('honors per-vendor refresh interval override', () =>
+        assertEqual(cfg.vendors.gemini.refreshIntervalSecs, 15));
+    it('vendorRefreshIntervalSecs uses per-vendor override', () =>
+        assertEqual(vendorRefreshIntervalSecs(cfg, 'gemini'), 15));
+    it('vendorRefreshIntervalSecs falls back to overridden global for other vendors', () =>
+        assertEqual(vendorRefreshIntervalSecs(cfg, 'anthropic'), 600));
     it('honors a vendor enable toggle', () => assertEqual(cfg.vendors.deepseek.enabled, true));
     it('honors the notify-enabled toggle', () => assertEqual(cfg.notifications.enabled, true));
     it('honors the notify-threshold override', () => assertEqual(cfg.notifications.threshold, 75));
