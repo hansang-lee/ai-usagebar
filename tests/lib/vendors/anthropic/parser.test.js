@@ -36,12 +36,12 @@ function snap(session, weekly, sonnetPct, extra, scopedPcts = []) {
 }
 
 describe('parseUsage', () => {
-    it('parses a full response (float util rounds, sonnet + extra present)', () => {
+    it('parses a full response (float util keeps 2 decimals, sonnet + extra present)', () => {
         const s = parseUsage(FULL, 'Max 5x');
         assertEqual(s.plan, 'Max 5x');
-        assertEqual(s.session.utilizationPct, 43); // 42.7 rounded to nearest
+        assertEqual(s.session.utilizationPct, 42.7);
         assertEqual(s.weekly.utilizationPct, 27);
-        assertEqual(s.sonnet.utilizationPct, 4);
+        assertEqual(s.sonnet.utilizationPct, 4.2);
         assertEqual(s.extra.limitCents, 5000);
         assertEqual(s.extra.spentCents, 250);
         assertEqual(s.session.resetsAt instanceof Date, true);
@@ -50,7 +50,7 @@ describe('parseUsage', () => {
     it('accepts a Uint8Array body', () => {
         const s = parseUsage(new TextEncoder().encode(FULL), 'Pro');
         assertEqual(s.plan, 'Pro');
-        assertEqual(s.session.utilizationPct, 43);
+        assertEqual(s.session.utilizationPct, 42.7);
     });
 
     it('missing sonnet + extra → both null', () => {
@@ -189,9 +189,9 @@ describe('anthropicSeverity', () => {
 
 describe('anthropicPeakUsage', () => {
     it('returns the peak percent and the winning window resets_at', () => {
-        const s = parseUsage(FULL, 'Max 5x'); // session 42.7→43 is the max
+        const s = parseUsage(FULL, 'Max 5x'); // session 42.7 is the max
         const p = anthropicPeakUsage(s);
-        assertEqual(p.percent, 43);
+        assertEqual(p.percent, 42.7);
         assertEqual(p.resetsAt, s.session.resetsAt);
     });
     it('selects the weekly window when it is the peak', () => {
