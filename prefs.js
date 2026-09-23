@@ -10,7 +10,7 @@ import {vformat} from './lib/format.js';
 import {defaultTheme} from './lib/theme.js';
 import {VENDOR_LABELS} from './lib/vendors.js';
 
-const INTERVAL_MIN = 300;
+const INTERVAL_MIN = 60;
 const INTERVAL_MAX = 86400;
 
 const COLOR_KEY_PALETTE = {
