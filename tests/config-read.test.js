@@ -6,7 +6,7 @@ import system from 'system';
 // any Gio.Settings is constructed.
 GLib.setenv('GSETTINGS_BACKEND', 'memory', true);
 
-import {readConfig, anthropicCredsPath, codexAuthPath, vendorRefreshIntervalSecs} from '../lib/config.js';
+import {readConfig, anthropicCredsPath, codexAuthPath, vendorRefreshIntervalSecs, pollCacheTtlMs} from '../lib/config.js';
 import {describe, it, assertEqual, summary} from './_assert.js';
 
 const SCHEMA_ID = 'org.gnome.shell.extensions.ai-usagebar';
@@ -113,6 +113,11 @@ describe('readConfig — overrides', () => {
     it('honors a vendor enable toggle', () => assertEqual(cfg.vendors.deepseek.enabled, true));
     it('honors the notify-enabled toggle', () => assertEqual(cfg.notifications.enabled, true));
     it('honors the notify-threshold override', () => assertEqual(cfg.notifications.threshold, 75));
+});
+
+describe('pollCacheTtlMs', () => {
+    it('is half the poll interval', () => assertEqual(pollCacheTtlMs(60), 30_000));
+    it('never drops below one second', () => assertEqual(pollCacheTtlMs(1), 1_000));
 });
 
 system.exit(summary());

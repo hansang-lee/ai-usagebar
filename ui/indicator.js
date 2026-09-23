@@ -10,7 +10,7 @@ import * as PanelMenu from 'resource:///org/gnome/shell/ui/panelMenu.js';
 import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
 
 import {Cache} from '../lib/cache.js';
-import {readConfig, vendorRefreshIntervalSecs} from '../lib/config.js';
+import {readConfig, vendorRefreshIntervalSecs, pollCacheTtlMs, MANUAL_REFRESH_CACHE_TTL_MS} from '../lib/config.js';
 import {normalizeActive, cycleVendor, enabledVendors, isEnabled} from '../lib/config-resolve.js';
 import {writeActiveVendorMirror} from '../lib/active-vendor.js';
 import {request, disposeSession} from '../lib/http.js';
@@ -75,6 +75,7 @@ class Indicator extends PanelMenu.Button {
         this._theme = defaultTheme();
         this._rebuildTheme();
         this._pollTimeouts = new Map(); // vendorId -> timeoutId
+        this._inFlight = new Set();     // vendorIds with a fetch underway
         this._renderTimeoutId = null;
         this._openStateId = null;
         this._scrollId = null;
@@ -119,6 +120,8 @@ class Indicator extends PanelMenu.Button {
         });
         actionsBox.add_child(this._makeActionButton('view-refresh-symbolic', _('Refresh all'), () =>
             this._refreshAll().catch(e => console.warn(`ai-usagebar: refresh all failed: ${e}`))));
+        actionsBox.add_child(this._makeActionButton('preferences-system-symbolic', _('Preferences'), () =>
+            this._openPreferences?.()));
         this._actionsItem.add_child(actionsBox);
         this.menu.addMenuItem(this._actionsItem);
 
@@ -151,10 +154,8 @@ class Indicator extends PanelMenu.Button {
     }
 
     _rearmVendorPollTimers(config) {
-        // Clear all existing vendor poll timers
-        for (const [id, timeoutId] of this._pollTimeouts) {
+        for (const timeoutId of this._pollTimeouts.values())
             GLib.Source.remove(timeoutId);
-        }
         this._pollTimeouts.clear();
 
         const enabled = enabledVendors(config);
@@ -377,9 +378,11 @@ class Indicator extends PanelMenu.Button {
         this._ensureVendorExpanded(activeId);
     }
 
-    async _fetchVendor(id) {
-        if (this._destroyed)
+    async _fetchVendor(id, {force = false} = {}) {
+        // A slow fetch (agy takes seconds) must not stack up behind short intervals.
+        if (this._destroyed || this._inFlight.has(id))
             return;
+        this._inFlight.add(id);
         const adapter = getAdapter(id);
         const cache = Cache.forVendor(adapter.cacheId);
         try {
@@ -388,6 +391,7 @@ class Indicator extends PanelMenu.Button {
                 cache,
                 http: request,
                 signal: this._cancellable,
+                cacheTtlMs: force ? MANUAL_REFRESH_CACHE_TTL_MS : pollCacheTtlMs(vendorRefreshIntervalSecs(this._config, id)),
             });
             if (this._destroyed)
                 return;
@@ -395,13 +399,15 @@ class Indicator extends PanelMenu.Button {
             this._maybeNotify(adapter, cache, res, this._config);
         } catch (e) {
             console.warn(`ai-usagebar: fetch failed for ${id}: ${e}`);
+        } finally {
+            this._inFlight?.delete(id);
         }
         if (this._destroyed)
             return;
         this._renderMulti();
     }
 
-    async _refresh() {
+    async _refresh({force = false} = {}) {
         this._config = readConfig(this._settings);
         this._barFormat = this._config.barFormat;
 
@@ -415,12 +421,7 @@ class Indicator extends PanelMenu.Button {
 
         this._maybeRebuildVendorSections(this._config);
 
-        const enabled = enabledVendors(this._config);
-        for (const id of enabled) {
-            await this._fetchVendor(id);
-            if (this._destroyed)
-                return;
-        }
+        await Promise.all(enabledVendors(this._config).map(id => this._fetchVendor(id, {force})));
     }
 
     _renderMulti() {
@@ -503,7 +504,7 @@ class Indicator extends PanelMenu.Button {
     }
 
     async _refreshAll() {
-        return this._refresh();
+        return this._refresh({force: true});
     }
 
     _runFetch(adapter, ctx) {
