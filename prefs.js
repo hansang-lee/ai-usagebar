@@ -68,34 +68,15 @@ class StagedSettings {
         this._emitChanged(key, val);
     }
 
-    get_enum(key) {
-        return this._staged.has(key) ? this._staged.get(key) : this._real.get_enum(key);
-    }
-
-    set_enum(key, val) {
+    // Staged like any other edit, so Cancel also undoes a Reset.
+    reset(key) {
+        const val = this._real.get_default_value(key).deep_unpack();
         this._staged.set(key, val);
         this._emitChanged(key, val);
     }
 
-    reset(key) {
-        this._real.reset(key);
-        this._staged.delete(key);
-        this._emitChanged(key, this._getReal(key));
-    }
-
     get settings_schema() {
         return this._real.settings_schema;
-    }
-
-    _getReal(key) {
-        const schema = this._real.settings_schema;
-        const keyObj = schema?.get_key(key);
-        const typeStr = keyObj ? keyObj.get_value_type().dup_string() : 's';
-        if (typeStr === 'b')
-            return this._real.get_boolean(key);
-        if (typeStr === 'i' || typeStr === 'u')
-            return this._real.get_int(key);
-        return this._real.get_string(key);
     }
 
     _emitChanged(key, val) {
