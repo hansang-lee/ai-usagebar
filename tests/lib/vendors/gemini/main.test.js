@@ -173,6 +173,39 @@ describe('fetchSnapshot with agy runner', () => {
             assertEqual(second.snapshot.session.utilizationPct, 36.84);
         });
     });
+
+    it('falls back to the last real snapshot as stale when agy fails', () => {
+        withTemp((dir) => {
+            const cache = new Cache(dir);
+            runSync(fetchSnapshot({
+                cache,
+                runner: () => Promise.resolve({ok: true, stdout: SAMPLE_AGY_JSON}),
+                agyPath: '/fake/agy',
+            }));
+            const out = runSync(fetchSnapshot({
+                cache,
+                cacheTtlMs: 0,
+                runner: () => Promise.resolve({ok: false, error: new Error('Cancelled')}),
+                agyPath: '/fake/agy',
+            }));
+            assertEqual(out.ok, true);
+            assertEqual(out.stale, true);
+            assertEqual(out.snapshot.session.utilizationPct, 36.84);
+            assertEqual(out.snapshot.session.resetsAt instanceof Date, true);
+        });
+    });
+
+    it('returns an error instead of synthesized windows when agy fails with no cache', () => {
+        withTemp((dir) => {
+            const out = runSync(fetchSnapshot({
+                cache: new Cache(dir),
+                runner: () => Promise.resolve({ok: false, stdout: ''}),
+                agyPath: '/fake/agy',
+            }));
+            assertEqual(out.ok, false);
+            assertEqual(out.kind, 'error');
+        });
+    });
 });
 
 system.exit(summary());
