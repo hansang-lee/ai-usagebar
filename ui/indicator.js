@@ -11,11 +11,11 @@ import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
 
 import {Cache} from '../lib/cache.js';
 import {readConfig} from '../lib/config.js';
-import {normalizeActive, cycleVendor, enabledVendors} from '../lib/config-resolve.js';
+import {normalizeActive, cycleVendor, enabledVendors, isEnabled} from '../lib/config-resolve.js';
 import {writeActiveVendorMirror} from '../lib/active-vendor.js';
 import {request, disposeSession} from '../lib/http.js';
 import {getAdapter} from '../lib/vendors/registry.js';
-import {vendorLabel} from '../lib/vendors.js';
+import {VENDOR_IDS, vendorLabel} from '../lib/vendors.js';
 import {renderSection} from './vendorSection.js';
 import {substitute, tooltipRows} from '../lib/format.js';
 import {evaluateNotification, notificationText} from '../lib/notify.js';
@@ -32,6 +32,19 @@ function vendorTag(id) {
     return getAdapter(id).vendorShort.toUpperCase();
 }
 
+function vendorSwitchLabel(id) {
+    switch (id) {
+    case 'anthropic': return 'Anthropic (Claude)';
+    case 'openai': return 'OpenAI (ChatGPT)';
+    case 'gemini': return 'Gemini';
+    case 'deepseek': return 'DeepSeek';
+    case 'kimi': return 'Kimi';
+    case 'openrouter': return 'OpenRouter';
+    case 'zai': return 'Z.AI';
+    default: return vendorLabel(id);
+    }
+}
+
 export const Indicator = GObject.registerClass(
 class Indicator extends PanelMenu.Button {
     _init(settings, openPreferences, extensionPath) {
@@ -41,6 +54,13 @@ class Indicator extends PanelMenu.Button {
         // on the menu's item box so it holds regardless of which vendor sub-menu
         // is expanded, rather than on a per-section container nested in a submenu.
         this.menu.box.add_style_class_name('aiusagebar-popup');
+
+        // GNOME Shell PopupMenu enforces a single-accordion by default: opening any
+        // submenu invokes this.menu._setOpenedSubMenu(sub), which forcefully closes
+        // any previously opened submenu. Overriding _setOpenedSubMenu to a no-op allows
+        // multiple vendor sections (e.g. Anthropic, Gemini) to remain expanded simultaneously
+        // and be toggled independently by clicking their section headers.
+        this.menu._setOpenedSubMenu = function (_submenu) {};
 
         this._settings = settings;
         this._openPreferences = openPreferences;
@@ -60,6 +80,7 @@ class Indicator extends PanelMenu.Button {
         this._scrollId = null;
         this._settingsChangedId = null;
         this._destroyed = false;
+        this._rebuildingVendors = false;
 
         // Dev override: AI_USAGEBAR_FAKE_PCT=<0..100> short-circuits the real
         // fetch with a synthetic snapshot at that percentage (see `make run`).
@@ -74,21 +95,9 @@ class Indicator extends PanelMenu.Button {
         this._fetchedAt = new Map();    // vendorId -> Date
         this._vendorItems = new Map();  // vendorId -> PopupMenu.PopupSubMenuMenuItem
         this._enabledSig = '';
+        this._expandedVendors = new Set(enabledVendors(this._config));
 
         this._box = new St.BoxLayout({style_class: 'panel-status-menu-box'});
-        this._tag = new St.Label({
-            style_class: 'aiusagebar-panel-tag',
-            text: vendorTag(this._activeId),
-            y_align: Clutter.ActorAlign.CENTER,
-            y_expand: true,
-        });
-        this._label = new St.Label({
-            text: '',
-            y_align: Clutter.ActorAlign.CENTER,
-            y_expand: true,
-        });
-        this._box.add_child(this._tag);
-        this._box.add_child(this._label);
         this.add_child(this._box);
 
         // Footer is a single non-reactive row of icon-only action buttons
@@ -97,6 +106,9 @@ class Indicator extends PanelMenu.Button {
         // all three buttons) lives in the uiGroup and is torn down in destroy().
         this._tooltip = null;
         this._tooltipTimeoutId = null;
+        this._manageItem = null;
+        this._vendorSwitches = new Map();
+        this._buildManageSection(this._config);
         this._separator = new PopupMenu.PopupSeparatorMenuItem();
         this.menu.addMenuItem(this._separator);
         this._actionsItem = new PopupMenu.PopupBaseMenuItem({reactive: false, can_focus: false});
@@ -114,10 +126,12 @@ class Indicator extends PanelMenu.Button {
         this._actionsItem.add_child(actionsBox);
         this.menu.addMenuItem(this._actionsItem);
 
-        // Seed the active vendor with a Loading… state so its sub-section (and an
-        // immediately-opened popup) is never empty before the first fetch lands.
-        this._results.set(this._activeId, {ok: false, kind: 'loading'});
+        // Seed enabled vendors with a Loading… state so sub-sections and top bar
+        // are never empty before the first fetch lands.
+        for (const id of enabledVendors(this._config))
+            this._results.set(id, {ok: false, kind: 'loading'});
         this._rebuildVendorSections(this._config);
+        this._renderMulti();
 
         // Live countdowns: re-render the active sub-section only while open.
         this._openStateId = this.menu.connect('open-state-changed', (_m, open) => {
@@ -177,18 +191,18 @@ class Indicator extends PanelMenu.Button {
             return;
         }
 
-        // Active vendor changed (scroll write, primary sync, or a disable that
-        // bumped the fallback): _refresh swaps adapter + cache, rebuilds sub-menus,
-        // and fetches — a cache-warm revisit skips the network via the 60s TTL.
-        if (normalizeActive(config) !== this._adapter.id) {
+        this._config = config;
+        this._barFormat = config.barFormat;
+        const activeChanged = normalizeActive(config) !== this._adapter.id;
+        const enabledChanged = this._enabledSignature(config) !== this._enabledSig;
+
+        this._maybeRebuildVendorSections(config);
+        this._syncManageSwitches(config);
+
+        if (activeChanged || enabledChanged) {
             this._refresh().catch(e => console.warn(`ai-usagebar: refresh failed: ${e}`));
             return;
         }
-
-        // Same active vendor: reflect config in-process only (no fetch).
-        this._config = config;
-        this._barFormat = config.barFormat;
-        this._maybeRebuildVendorSections(config);
 
         // Appearance-only keys (severity colors, popup format, pace marker) affect
         // every built section, not just the active one — rebuild the theme on a
@@ -211,22 +225,102 @@ class Indicator extends PanelMenu.Button {
             this._rebuildVendorSections(config);
     }
 
+    _buildManageSection(config) {
+        this._manageItem = new PopupMenu.PopupSubMenuMenuItem(_('Select visible AI'), true);
+        this._manageItem.icon.icon_name = 'checkbox-checked-symbolic';
+        this._vendorSwitches = new Map();
+
+        VENDOR_IDS.forEach(id => {
+            const active = isEnabled(config, id);
+            const switchItem = new PopupMenu.PopupSwitchMenuItem(vendorSwitchLabel(id), active);
+            const icon = new St.Icon({
+                gicon: this._vendorGicon(),
+                style_class: 'popup-menu-icon',
+                y_align: Clutter.ActorAlign.CENTER,
+            });
+            switchItem.insert_child_at_index(icon, 0);
+
+            // Prevent menu from closing on toggle click
+            switchItem.activate = function (_event) {
+                this.toggle();
+            };
+
+            switchItem.connect('toggled', (_item, state) => {
+                if (this._destroyed)
+                    return;
+                if (state)
+                    this._expandedVendors?.add(id);
+                else
+                    this._expandedVendors?.delete(id);
+                this._settings.set_boolean(`${id}-enabled`, state);
+            });
+
+            this._manageItem.menu.addMenuItem(switchItem);
+            this._vendorSwitches.set(id, switchItem);
+        });
+
+        this.menu.addMenuItem(this._manageItem);
+    }
+
+    _syncManageSwitches(config) {
+        if (!this._vendorSwitches)
+            return;
+        for (const [id, switchItem] of this._vendorSwitches) {
+            const active = isEnabled(config, id);
+            if (switchItem.state !== active)
+                switchItem.setToggleState(active);
+        }
+    }
+
     _rebuildVendorSections(config) {
+        if (this._vendorItems.size > 0) {
+            for (const [id, item] of this._vendorItems) {
+                if (item.menu.isOpen)
+                    this._expandedVendors.add(id);
+                else
+                    this._expandedVendors.delete(id);
+            }
+        }
+
+        this._rebuildingVendors = true;
         for (const item of this._vendorItems.values())
             item.destroy();
         this._vendorItems.clear();
 
-        enabledVendors(config).forEach((id, idx) => {
+        const enabled = enabledVendors(config);
+        if (!this._expandedVendors) {
+            this._expandedVendors = new Set(enabled);
+        } else {
+            const enabledSet = new Set(enabled);
+            for (const id of this._expandedVendors) {
+                if (!enabledSet.has(id))
+                    this._expandedVendors.delete(id);
+            }
+        }
+
+        enabled.forEach((id, idx) => {
             const sub = new PopupMenu.PopupSubMenuMenuItem('', true);
             sub.icon.gicon = this._vendorGicon();
             sub.label.text = vendorLabel(id);
             this.menu.addMenuItem(sub, idx);
             this._vendorItems.set(id, sub);
+
             this._renderVendorSection(id);
+
+            const isOpen = this._expandedVendors.has(id);
+            sub.setSubmenuShown(isOpen);
+            sub.menu.connect('open-state-changed', (_m, open) => {
+                if (this._destroyed || this._rebuildingVendors)
+                    return;
+                if (open)
+                    this._expandedVendors.add(id);
+                else
+                    this._expandedVendors.delete(id);
+            });
         });
 
+        this._rebuildingVendors = false;
         this._enabledSig = this._enabledSignature(config);
-        this._setActiveExpansion(this._activeId);
     }
 
     _renderVendorSection(id) {
@@ -268,79 +362,139 @@ class Indicator extends PanelMenu.Button {
         }
     }
 
+    _ensureVendorExpanded(id) {
+        this._expandedVendors.add(id);
+        const item = this._vendorItems.get(id);
+        if (item && !item.menu.isOpen)
+            item.setSubmenuShown(true);
+    }
+
     _setActiveExpansion(activeId) {
-        for (const [id, item] of this._vendorItems) {
-            const want = id === activeId;
-            if (item.menu.isOpen !== want)
-                item.setSubmenuShown(want);
-        }
+        this._ensureVendorExpanded(activeId);
     }
 
     async _refresh() {
         this._config = readConfig(this._settings);
         this._barFormat = this._config.barFormat;
 
-        // Swap adapter + cache when the effective active vendor changed. Each
-        // vendor's result is rendered through its own adapter, so no map entry
-        // needs dropping — only the active fetch target changes.
         const activeId = normalizeActive(this._config);
         const activeChanged = activeId !== this._adapter.id;
         if (activeChanged) {
             this._adapter = getAdapter(activeId);
             this._cache = Cache.forVendor(this._adapter.cacheId);
-            this._setVendorTag(activeId);
         }
         this._activeId = activeId;
 
         this._maybeRebuildVendorSections(this._config);
-        if (activeChanged)
-            this._setActiveExpansion(activeId);
 
-        const res = await this._runFetch(this._adapter, {
-            config: this._config,
-            cache: this._cache,
-            http: request,
-            signal: this._cancellable,
-        });
-        if (this._destroyed)
-            return;
-        this._storeResult(activeId, res);
-        this._maybeNotify(this._adapter, this._cache, res, this._config);
-        this._render(res);
-    }
-
-    async _refreshAll() {
-        const config = readConfig(this._settings);
-        this._maybeRebuildVendorSections(config);
-
-        for (const id of enabledVendors(config)) {
+        const enabled = enabledVendors(this._config);
+        for (const id of enabled) {
             const adapter = getAdapter(id);
             const cache = Cache.forVendor(adapter.cacheId);
-            let res;
             try {
-                res = await this._runFetch(adapter, {
-                    config,
+                const res = await this._runFetch(adapter, {
+                    config: this._config,
                     cache,
                     http: request,
                     signal: this._cancellable,
                 });
+                if (this._destroyed)
+                    return;
+                this._storeResult(id, res);
+                this._maybeNotify(adapter, cache, res, this._config);
             } catch (e) {
-                res = {ok: false, kind: 'error', message: e?.message ?? String(e)};
+                console.warn(`ai-usagebar: fetch failed for ${id}: ${e}`);
             }
-            if (this._destroyed)
-                return;
-            this._storeResult(id, res);
-            this._maybeNotify(adapter, cache, res, config);
-            this._renderVendorSection(id);
         }
 
-        const activeRes = this._results.get(this._activeId);
-        if (activeRes)
-            this._render(activeRes);
+        if (this._destroyed)
+            return;
+        this._renderMulti();
     }
 
-    // Real fetch, unless AI_USAGEBAR_FAKE_PCT is set and the adapter can build a
-    // synthetic snapshot — then return that instead (dev rendering check).
+    _renderMulti() {
+        if (this._destroyed)
+            return;
+
+        const enabled = enabledVendors(this._config);
+        const now = new Date();
+        this._box.destroy_all_children();
+
+        if (enabled.length === 0) {
+            const emptyLabel = new St.Label({
+                text: 'AI',
+                style_class: 'aiusagebar-panel-tag',
+                y_align: Clutter.ActorAlign.CENTER,
+            });
+            this._box.add_child(emptyLabel);
+            return;
+        }
+
+        enabled.forEach((id, idx) => {
+            const adapter = getAdapter(id);
+            const res = this._results.get(id);
+
+            let planName = '';
+            let valText = '';
+            let color = this._theme.fg;
+
+            if (res && res.ok) {
+                const snap = res.snapshot;
+                if (snap?.plan) {
+                    planName = snap.plan
+                        .replace(/^ChatGPT\s+/i, '')
+                        .replace(/\s*\(fake\)/i, '')
+                        .toUpperCase();
+                }
+                valText = substitute(this._barFormat, adapter.placeholders(snap, now));
+                if (res.stale)
+                    valText += STALE_MARK;
+                color = severityColor(adapter.severity(snap), this._theme);
+            } else if (res && res.kind === 'loading') {
+                valText = _('Loading…');
+            } else if (res && res.kind === 'error') {
+                valText = '⚠';
+                color = severityColor(Severity.CRITICAL, this._theme);
+            } else {
+                valText = '…';
+            }
+
+            const tagText = `${vendorTag(id)} ${planName}`.trim();
+            const tagLabel = new St.Label({
+                style_class: 'aiusagebar-panel-tag',
+                text: tagText,
+                y_align: Clutter.ActorAlign.CENTER,
+                y_expand: true,
+            });
+            const valLabel = new St.Label({
+                text: valText,
+                y_align: Clutter.ActorAlign.CENTER,
+                y_expand: true,
+            });
+            if (color)
+                valLabel.set_style(`color: ${color};`);
+
+            this._box.add_child(tagLabel);
+            this._box.add_child(valLabel);
+
+            if (idx < enabled.length - 1) {
+                const sepLabel = new St.Label({
+                    style_class: 'aiusagebar-dim',
+                    text: '  |  ',
+                    y_align: Clutter.ActorAlign.CENTER,
+                    y_expand: true,
+                });
+                this._box.add_child(sepLabel);
+            }
+
+            this._renderVendorSection(id);
+        });
+    }
+
+    async _refreshAll() {
+        return this._refresh();
+    }
+
     _runFetch(adapter, ctx) {
         if (this._fakePct !== null && typeof adapter.fakeSnapshot === 'function') {
             return Promise.resolve({
@@ -360,7 +514,6 @@ class Indicator extends PanelMenu.Button {
             this._fetchedAt.set(id, new Date(Date.now() - res.cacheAgeMs));
     }
 
-    // Once-per-crossing notification; the per-vendor cache flag debounces re-fires.
     async _maybeNotify(adapter, cache, res, config) {
         if (!res.ok || !config.notifications.enabled)
             return;
@@ -387,34 +540,14 @@ class Indicator extends PanelMenu.Button {
         }
     }
 
-    _render(res) {
-        if (res.ok) {
-            const now = new Date();
-            this._paintLabelOk(res.snapshot, res.stale, now);
-        } else if (res.kind === 'loading') {
-            this._setLabel(_('Loading…'), this._theme.fg);
-        } else {
-            // kind: 'error' — message is retained on disk (.last_error) and in
-            // the result; surface it in the popup and log it.
-            console.warn(`ai-usagebar: ${res.message}`);
-            this._setLabel('⚠', severityColor(Severity.CRITICAL, this._theme));
-        }
-        this._renderVendorSection(this._activeId);
+    _render(_res) {
+        this._renderMulti();
     }
 
     _reRenderFromCache() {
         if (this._destroyed)
             return;
-        const res = this._results.get(this._activeId);
-        if (!res || !res.ok)
-            return;
-        try {
-            const now = new Date();
-            this._paintLabelOk(res.snapshot, res.stale, now);
-            this._renderVendorSection(this._activeId);
-        } catch (e) {
-            console.warn(`ai-usagebar: re-render failed: ${e}`);
-        }
+        this._renderMulti();
     }
 
     _rebuildTheme() {
@@ -425,10 +558,8 @@ class Indicator extends PanelMenu.Button {
         if (this._destroyed)
             return;
         this._reRenderFromCache();
-        for (const id of this._vendorItems.keys()) {
-            if (id !== this._activeId)
-                this._renderVendorSection(id);
-        }
+        for (const id of this._vendorItems.keys())
+            this._renderVendorSection(id);
     }
 
     _onScroll(_actor, event) {
@@ -462,15 +593,13 @@ class Indicator extends PanelMenu.Button {
         return Clutter.EVENT_STOP;
     }
 
-    _paintLabelOk(snapshot, stale, now) {
-        let text = substitute(this._barFormat, this._adapter.placeholders(snapshot, now));
-        if (stale)
-            text += STALE_MARK;
-        this._setLabel(text, severityColor(this._adapter.severity(snapshot), this._theme));
-    }
 
     _onPopupOpen() {
-        this._setActiveExpansion(this._activeId);
+        for (const [id, item] of this._vendorItems) {
+            const want = this._expandedVendors.has(id);
+            if (item.menu.isOpen !== want)
+                item.setSubmenuShown(want);
+        }
         this._reRenderFromCache();
         if (this._renderTimeoutId)
             return;
@@ -508,20 +637,11 @@ class Indicator extends PanelMenu.Button {
         menu.addMenuItem(item);
     }
 
-    _setLabel(text, color) {
-        this._label.text = text;
-        this._label.set_style(`color: ${color};`);
-    }
-
     _vendorGicon() {
         // Symbolic name (-symbolic.svg) so St recolors it to the menu foreground;
         // a plain icon would render its currentColor as black and vanish in dark.
         const f = Gio.File.new_for_path(GLib.build_filenamev([this._path, 'icons', 'ai-symbolic.svg']));
         return new Gio.FileIcon({file: f});
-    }
-
-    _setVendorTag(id) {
-        this._tag.text = vendorTag(id);
     }
 
     _makeActionButton(iconName, label, onClick) {
@@ -620,8 +740,14 @@ class Indicator extends PanelMenu.Button {
         this._settings = null;
 
         this._vendorItems.clear();
+        this._expandedVendors?.clear();
         this._results.clear();
         this._fetchedAt.clear();
+        this._vendorSwitches?.clear();
+        if (this._manageItem) {
+            this._manageItem.destroy();
+            this._manageItem = null;
+        }
 
         this.menu?.removeAll();
 
