@@ -188,11 +188,26 @@ export default class AiUsagebarPreferences extends ExtensionPreferences {
             title: _('Reset'),
             description: _('Restore every setting — vendor toggles, paths, keys, formats, and colors — to its built-in default.'),
         });
-        const resetRow = new Adw.ButtonRow({title: _('Reset all settings')});
-        resetRow.add_css_class('destructive-action');
-        const resetActivatedId = resetRow.connect('activated', () =>
-            this._confirmResetAll(settings, resetRow.get_root()));
-        cleanups.push(() => resetRow.disconnect(resetActivatedId));
+        let resetRow;
+        if (Adw.ButtonRow) {
+            resetRow = new Adw.ButtonRow({title: _('Reset all settings')});
+            resetRow.add_css_class('destructive-action');
+            const resetActivatedId = resetRow.connect('activated', () =>
+                this._confirmResetAll(settings, resetRow.get_root()));
+            cleanups.push(() => resetRow.disconnect(resetActivatedId));
+        } else {
+            resetRow = new Adw.ActionRow({title: _('Reset all settings')});
+            const btn = new Gtk.Button({
+                label: _('Reset'),
+                valign: Gtk.Align.CENTER,
+            });
+            btn.add_css_class('destructive-action');
+            const btnClickedId = btn.connect('clicked', () =>
+                this._confirmResetAll(settings, resetRow.get_root()));
+            cleanups.push(() => btn.disconnect(btnClickedId));
+            resetRow.add_suffix(btn);
+            resetRow.activatable_widget = btn;
+        }
         resetGroup.add(resetRow);
         page.add(resetGroup);
 
