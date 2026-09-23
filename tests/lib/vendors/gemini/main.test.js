@@ -101,9 +101,9 @@ describe('parseAgyUsageOutput', () => {
     it('correctly extracts session and weekly buckets with utilization % and reset times', () => {
         const parsed = parseAgyUsageOutput(SAMPLE_AGY_JSON);
         assertEqual(parsed !== null, true);
-        assertEqual(parsed.session.utilizationPct, 37);
+        assertEqual(parsed.session.utilizationPct, 36.84);
         assertEqual(parsed.session.resetsAt.toISOString(), '2026-09-23T13:20:26.000Z');
-        assertEqual(parsed.weekly.utilizationPct, 21);
+        assertEqual(parsed.weekly.utilizationPct, 20.71);
         assertEqual(parsed.weekly.resetsAt.toISOString(), '2026-09-30T04:07:09.000Z');
     });
 
@@ -141,8 +141,8 @@ describe('tryFetchAgyQuota', () => {
         };
         const res = runSync(tryFetchAgyQuota(successRunner, null, '/fake/agy'));
         assertEqual(res !== null, true);
-        assertEqual(res.session.utilizationPct, 37);
-        assertEqual(res.weekly.utilizationPct, 21);
+        assertEqual(res.session.utilizationPct, 36.84);
+        assertEqual(res.weekly.utilizationPct, 20.71);
     });
 });
 
@@ -158,8 +158,8 @@ describe('fetchSnapshot with agy runner', () => {
                 now: new Date('2026-09-23T08:50:00Z'),
             }));
             assertEqual(out.ok, true);
-            assertEqual(out.snapshot.session.utilizationPct, 37);
-            assertEqual(out.snapshot.weekly.utilizationPct, 21);
+            assertEqual(out.snapshot.session.utilizationPct, 36.84);
+            assertEqual(out.snapshot.weekly.utilizationPct, 20.71);
             assertEqual(out.snapshot.hasApiKey, true);
 
             // Second fetch should be served from fresh cache
@@ -170,7 +170,7 @@ describe('fetchSnapshot with agy runner', () => {
                 now: new Date('2026-09-23T08:50:10Z'),
             }));
             assertEqual(second.ok, true);
-            assertEqual(second.snapshot.session.utilizationPct, 37);
+            assertEqual(second.snapshot.session.utilizationPct, 36.84);
         });
     });
 });

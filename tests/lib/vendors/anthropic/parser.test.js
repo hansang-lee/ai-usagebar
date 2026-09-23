@@ -234,17 +234,17 @@ describe('placeholders', () => {
 
     it('renders the default bar format', () => {
         const out = substitute('{vendor_short} {session_pct}% · {session_reset}', placeholders(s, now));
-        assertEqual(out, 'cld 58% · 1h 30m');
+        assertEqual(out, 'cld 58.00% · 1h 30m');
     });
 
     it('renders a custom format using a pace key', () => {
         const out = substitute('{session_pct}% ({session_pace_pts})', placeholders(s, now));
-        assertEqual(out, '58% (28pts under)');
+        assertEqual(out, '58.00% (28pts under)');
     });
 
     it('sonnet-absent defaults present; *_bar keys omitted', () => {
         const m = placeholders(s, now);
-        assertEqual(m.get('sonnet_pct'), '100');
+        assertEqual(m.get('sonnet_pct'), '100.00');
         assertEqual(m.get('sonnet_reset'), '—');
         assertEqual(m.get('sonnet_elapsed'), '0');
         assertEqual(m.get('extra_spent'), '');

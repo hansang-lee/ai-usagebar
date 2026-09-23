@@ -55,7 +55,8 @@ function cardRow() {
 
 function buildWindowRow(row, showPace) {
     const r = cardRow();
-    const pctText = row.paceGlyph ? `${row.pct}% ${row.paceGlyph}` : `${row.pct}%`;
+    const pctVal = typeof row.pct === 'number' ? row.pct.toFixed(2) : row.pct;
+    const pctText = row.paceGlyph ? `${pctVal}% ${row.paceGlyph}` : `${pctVal}%`;
     r.add_child(rowHeader(row.icon, row.title, {
         subtitle: row.subtitle,
         trailing: pctText,
