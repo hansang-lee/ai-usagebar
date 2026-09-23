@@ -10,7 +10,7 @@ import {vformat} from './lib/format.js';
 import {defaultTheme} from './lib/theme.js';
 import {VENDOR_LABELS} from './lib/vendors.js';
 
-const INTERVAL_MIN = 60;
+const INTERVAL_MIN = 5;
 const INTERVAL_MAX = 86400;
 
 const COLOR_KEY_PALETTE = {
@@ -91,8 +91,8 @@ export default class AiUsagebarPreferences extends ExtensionPreferences {
         const adjustment = new Gtk.Adjustment({
             lower: INTERVAL_MIN,
             upper: INTERVAL_MAX,
-            step_increment: 60,
-            page_increment: 300,
+            step_increment: 5,
+            page_increment: 30,
         });
         const interval = new Adw.SpinRow({
             title: _('Refresh interval (seconds)'),

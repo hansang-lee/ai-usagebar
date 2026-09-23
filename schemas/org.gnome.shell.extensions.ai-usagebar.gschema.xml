@@ -27,9 +27,9 @@
 
     <key name="refresh-interval" type="i">
       <default>300</default>
-      <range min="60" max="86400"/>
+      <range min="5" max="86400"/>
       <summary>Refresh interval in seconds</summary>
-      <description>How often usage is fetched. The minimum of 60 seconds avoids excessive polling while allowing near real-time updates.</description>
+      <description>How often usage is fetched. The minimum of 5 seconds allows near real-time updates.</description>
     </key>
 
     <key name="bar-format" type="s">
