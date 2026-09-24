@@ -149,6 +149,10 @@ export default class AiUsagebarPreferences extends ExtensionPreferences {
 
         this._setupHeaderBar(window, settings);
 
+        // Ensure preferences window is brought to front and focused
+        if (typeof window.present === 'function')
+            window.present();
+
         window.connect('close-request', () => {
             for (const disconnect of cleanups)
                 disconnect();

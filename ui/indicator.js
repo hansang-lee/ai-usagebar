@@ -120,8 +120,10 @@ class Indicator extends PanelMenu.Button {
         });
         actionsBox.add_child(this._makeActionButton('view-refresh-symbolic', _('Refresh all'), () =>
             this._refreshAll().catch(e => console.warn(`ai-usagebar: refresh all failed: ${e}`))));
-        actionsBox.add_child(this._makeActionButton('preferences-system-symbolic', _('Preferences'), () =>
-            this._openPreferences?.()));
+        actionsBox.add_child(this._makeActionButton('preferences-system-symbolic', _('Preferences'), () => {
+            this.menu.close(true);
+            this._openPreferences?.();
+        }));
         this._actionsItem.add_child(actionsBox);
         this.menu.addMenuItem(this._actionsItem);
 
