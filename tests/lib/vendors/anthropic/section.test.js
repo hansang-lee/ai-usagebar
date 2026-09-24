@@ -47,7 +47,7 @@ describe('buildSection — full snapshot', () => {
         const r = model.rows[0];
         assertEqual(r.icon, 'alarm-symbolic');
         assertEqual(r.title, 'Session');
-        assertEqual(r.pct, 38);
+        assertEqual(r.pct, 62);
         assertEqual(r.color, theme.yellow);
         assertEqual(r.reset, '1h 30m');
     });
@@ -132,7 +132,7 @@ describe('buildSection — scoped windows', () => {
         s.scoped = [scopedWin('Fable', 84, 2 * 24 * 60)];
         const r = buildSection(s, meta, NOW, theme).rows[3];
         assertEqual(r.icon, 'x-office-calendar-symbolic');
-        assertEqual(r.pct, 16);
+        assertEqual(r.pct, 84);
         assertEqual(r.color, theme.orange);
         const expected = calc({usagePct: 84, reset: s.scoped[0].resetsAt, now: NOW, windowMs: WEEKLY_MS}).elapsedPct;
         assertEqual(r.elapsedPct, expected);

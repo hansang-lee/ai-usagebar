@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ai-usagebar@wilfison\n"
 "Report-Msgid-Bugs-To: https://github.com/wilfison/ai-usagebar/issues\n"
-"POT-Creation-Date: 2026-07-17 18:03-0300\n"
+"POT-Creation-Date: 2026-09-25 00:45+0900\n"
 "PO-Revision-Date: 2026-06-06 12:00+0000\n"
 "Last-Translator: ai-usagebar contributors\n"
 "Language-Team: German\n"
@@ -40,67 +40,42 @@ msgstr "Nutzung kritisch"
 msgid "Usage at %d%%"
 msgstr "Nutzung bei %d%%"
 
-#: lib/vendors/anthropic/section.js:30 lib/vendors/kimi/section.js:23
-#: lib/vendors/openai/section.js:24 lib/vendors/zai/section.js:23
+#: lib/vendors/anthropic/section.js:29 lib/vendors/gemini/section.js:26
+#: lib/vendors/openai/section.js:24
 #, javascript-format
 msgid "Resets in %s"
 msgstr "Zurücksetzung in %s"
 
-#: lib/vendors/anthropic/section.js:39
+#: lib/vendors/anthropic/section.js:43 lib/vendors/gemini/section.js:36
 msgid "Session"
 msgstr "Sitzung"
 
-#: lib/vendors/anthropic/section.js:40 lib/vendors/kimi/section.js:33
-#: lib/vendors/zai/section.js:36
+#: lib/vendors/anthropic/section.js:50 lib/vendors/gemini/section.js:39
 msgid "Weekly"
 msgstr "Wöchentlich"
 
-#: lib/vendors/anthropic/section.js:42
+#: lib/vendors/anthropic/section.js:52
 msgid "Sonnet only"
 msgstr "Nur Sonnet"
 
-#: lib/vendors/anthropic/section.js:55
+#: lib/vendors/anthropic/section.js:65
 msgid "Extra usage"
 msgstr "Zusätzliche Nutzung"
 
-#: lib/vendors/anthropic/section.js:58
+#: lib/vendors/anthropic/section.js:68
 #, javascript-format
 msgid "Limit: %s"
 msgstr "Limit: %s"
 
 #. Translators: %s is the Anthropic plan name (e.g. "Max 5x") — kept verbatim.
-#: lib/vendors/anthropic/section.js:70
+#: lib/vendors/anthropic/section.js:80
 #, javascript-format
 msgid "Claude %s"
 msgstr "Claude %s"
 
-#: lib/vendors/deepseek/section.js:16 lib/vendors/openrouter/section.js:18
-msgid "Balance"
-msgstr "Guthaben"
-
-#. Translators: %s are money amounts (granted credit, topped-up credit).
-#: lib/vendors/deepseek/section.js:20
-#, javascript-format
-msgid "granted %s · topped-up %s"
-msgstr "gewährt %s · aufgeladen %s"
-
-#: lib/vendors/deepseek/section.js:28
-msgid "API available"
-msgstr "API verfügbar"
-
-#: lib/vendors/deepseek/section.js:28
-msgid "API unavailable"
-msgstr "API nicht verfügbar"
-
-#: lib/vendors/kimi/section.js:35
-msgid "Window (5h)"
-msgstr "Fenster (5h)"
-
-#. Translators: "Kimi" is a brand name — kept verbatim.
-#: lib/vendors/kimi/section.js:44
-#, javascript-format
-msgid "Kimi %s"
-msgstr "Kimi %s"
+#: lib/vendors/gemini/section.js:45
+msgid "Google One AI Premium (Gemini Advanced)"
+msgstr ""
 
 #: lib/vendors/openai/section.js:34
 msgid "Codex 5h"
@@ -138,6 +113,10 @@ msgstr "~ %s-%s lokale Nachrichten"
 #, javascript-format
 msgid "~ %s-%s cloud messages"
 msgstr "~ %s-%s Cloud-Nachrichten"
+
+#: lib/vendors/openrouter/section.js:18
+msgid "Balance"
+msgstr "Guthaben"
 
 #. Translators: %s are money amounts, %s%% is the consumed percentage.
 #: lib/vendors/openrouter/section.js:22
@@ -183,123 +162,139 @@ msgstr "HTTP %s"
 msgid "Updated %s"
 msgstr "Aktualisiert %s"
 
-#: lib/vendors/zai/section.js:34
-msgid "Session (5h)"
-msgstr "Sitzung (5h)"
+#: prefs.js:166 prefs.js:403
+msgid "Cancel"
+msgstr "Abbrechen"
 
-#: lib/vendors/zai/section.js:38
-msgid "MCP tools (monthly)"
-msgstr "MCP-Tools (monatlich)"
+#: prefs.js:167
+msgid "Discard unsaved changes and close"
+msgstr ""
 
-#: lib/vendors/zai/section.js:41
-msgid "no usage windows reported"
-msgstr "keine Nutzungsfenster gemeldet"
+#: prefs.js:170
+msgid "Apply"
+msgstr ""
 
-#: prefs.js:52
+#: prefs.js:171
+msgid "Apply changes without closing"
+msgstr ""
+
+#: prefs.js:174
+msgid "Save"
+msgstr ""
+
+#: prefs.js:176
+msgid "Save changes and close"
+msgstr ""
+
+#: prefs.js:188
+msgid "Settings applied"
+msgstr ""
+
+#: prefs.js:206
 msgid "General"
 msgstr "Allgemein"
 
-#: prefs.js:56
-msgid "Display"
-msgstr "Anzeige"
-
-#: prefs.js:62
-msgid "Primary vendor"
-msgstr "Primärer Anbieter"
-
-#: prefs.js:63
-msgid "Shown by default and used as the scroll-cycle reset target"
-msgstr "Standardmäßig angezeigt und als Rücksetzziel beim Scrollen verwendet"
-
-#: prefs.js:87
+#: prefs.js:211
 msgid "Refresh"
 msgstr "Aktualisierung"
 
-#. Translators: %d is the minimum refresh interval in seconds.
-#: prefs.js:89
+#: prefs.js:212
 #, javascript-format
-msgid "Minimum %d s — the upstream endpoints rate-limit below that."
-msgstr "Minimum %d s — die Upstream-Endpunkte drosseln darunter."
+msgid ""
+"Default refresh cadence in seconds (minimum %d s). Per-vendor overrides take "
+"precedence."
+msgstr ""
 
-#: prefs.js:98
-msgid "Refresh interval (seconds)"
+#: prefs.js:221
+#, fuzzy
+msgid "Default refresh interval (seconds)"
 msgstr "Aktualisierungsintervall (Sekunden)"
 
-#: prefs.js:121
+#: prefs.js:244
+#, fuzzy
+msgid "Per-AI Refresh Intervals"
+msgstr "Aktualisierungsintervall (Sekunden)"
+
+#: prefs.js:245
+msgid ""
+"Override refresh interval per AI (seconds). Set to 0 to use the default "
+"refresh interval."
+msgstr ""
+
+#: prefs.js:254
 msgid "Panel label"
 msgstr "Panel-Beschriftung"
 
-#. Translators: the {token} names are literal placeholders the user
-#. types — keep them verbatim, only translate the surrounding prose.
-#: prefs.js:124
+#: prefs.js:255
+#, fuzzy
 msgid ""
-"Placeholders: {vendor_short} {session_pct}% {session_reset} {plan} "
+"Placeholders ({session_pct} is the consumed share; use {session_left_pct} "
+"for what is left): {vendor_short} {session_pct}% {session_reset} {plan} "
 "{weekly_pct} {weekly_reset}"
 msgstr ""
 "Platzhalter: {vendor_short} {session_pct}% {session_reset} {plan} "
 "{weekly_pct} {weekly_reset}"
 
-#: prefs.js:126
+#: prefs.js:257
 msgid "Bar format"
 msgstr "Balkenformat"
 
-#: prefs.js:132
+#: prefs.js:262
 msgid "Popup"
 msgstr "Popup"
 
-#. Translators: the {token} names are literal placeholders the user
-#. types — keep them verbatim, only translate the surrounding prose.
-#: prefs.js:135
+#: prefs.js:263
+#, fuzzy
 msgid ""
 "Optional extra lines shown above the popup. Empty uses the built-in layout. "
-"Placeholders: {plan} {session_pct} {session_reset} {weekly_pct} "
-"{weekly_reset}"
+"Placeholders ({session_pct} is the consumed share): {plan} {session_pct} "
+"{session_reset} {weekly_pct} {weekly_reset} {session_left_pct} "
+"{weekly_left_pct}"
 msgstr ""
 "Optionale zusätzliche Zeilen über dem Popup. Leer verwendet das eingebaute "
 "Layout. Platzhalter: {plan} {session_pct} {session_reset} {weekly_pct} "
 "{weekly_reset}"
 
-#: prefs.js:137
+#: prefs.js:265
 msgid "Popup format"
 msgstr "Popup-Format"
 
-#: prefs.js:138
+#: prefs.js:266
 msgid "Show pace marker"
 msgstr "Tempomarkierung anzeigen"
 
-#: prefs.js:142
+#: prefs.js:270
 msgid "Severity colors"
 msgstr "Schweregrad-Farben"
 
-#: prefs.js:143
+#: prefs.js:271
 msgid ""
 "Pick a color per severity tier. Reset returns a tier to its built-in default."
 msgstr ""
 "Wählen Sie eine Farbe pro Schweregrad. Zurücksetzen stellt den Standardwert "
 "der Stufe wieder her."
 
-#. Translators: Low/Mid/High/Critical are usage-severity tier names.
-#: prefs.js:147
+#: prefs.js:274
 msgid "Low"
 msgstr "Niedrig"
 
-#: prefs.js:148
+#: prefs.js:275
 msgid "Mid"
 msgstr "Mittel"
 
-#: prefs.js:149
+#: prefs.js:276
 msgid "High"
 msgstr "Hoch"
 
-#: prefs.js:150
+#: prefs.js:277
 msgid "Critical"
 msgstr "Kritisch"
 
-#: prefs.js:154
+#: prefs.js:281
 msgid "Notifications"
 msgstr "Benachrichtigungen"
 
-#: prefs.js:155
+#: prefs.js:282
 msgid ""
 "Show a desktop notification the first time a vendor reaches the threshold. "
 "It re-arms when usage drops back or the window resets."
@@ -308,19 +303,28 @@ msgstr ""
 "erreicht. Sie wird erneut ausgelöst, wenn die Nutzung fällt oder das Fenster "
 "zurückgesetzt wird."
 
-#: prefs.js:157
+#: prefs.js:284
 msgid "Notify on high usage"
 msgstr "Bei hoher Nutzung benachrichtigen"
 
-#: prefs.js:165
+#: prefs.js:292
 msgid "Notification threshold (%)"
 msgstr "Benachrichtigungsschwelle (%)"
 
-#: prefs.js:188 prefs.js:227
+#: prefs.js:315
+#, fuzzy
+msgid "Enabled Models"
+msgstr "Aktiviert"
+
+#: prefs.js:316
+msgid "Choose which AI models to display in the top bar and popup menu."
+msgstr ""
+
+#: prefs.js:323 prefs.js:336 prefs.js:404
 msgid "Reset"
 msgstr "Zurücksetzen"
 
-#: prefs.js:189
+#: prefs.js:324
 msgid ""
 "Restore every setting — vendor toggles, paths, keys, formats, and colors — "
 "to its built-in default."
@@ -328,114 +332,156 @@ msgstr ""
 "Setzt jede Einstellung — Anbieter-Schalter, Pfade, Schlüssel, Formate und "
 "Farben — auf den Standardwert zurück."
 
-#: prefs.js:191
+#: prefs.js:328 prefs.js:334
 msgid "Reset all settings"
 msgstr "Alle Einstellungen zurücksetzen"
 
-#: prefs.js:223
+#: prefs.js:362
+msgid "0 uses default interval"
+msgstr ""
+
+#: prefs.js:400
 msgid "Reset all settings?"
 msgstr "Alle Einstellungen zurücksetzen?"
 
-#: prefs.js:224
+#: prefs.js:401
 msgid ""
 "This restores every setting to its built-in default and cannot be undone."
 msgstr ""
 "Dies setzt jede Einstellung auf ihren Standardwert zurück und kann nicht "
 "rückgängig gemacht werden."
 
-#: prefs.js:226
-msgid "Cancel"
-msgstr "Abbrechen"
-
-#: prefs.js:246 prefs.js:250
+#: prefs.js:422 prefs.js:426
 msgid "Anthropic"
 msgstr "Anthropic"
 
-#: prefs.js:251
+#: prefs.js:427
 msgid "Credentials path — empty uses ~/.claude/.credentials.json."
 msgstr "Anmeldedaten-Pfad — leer verwendet ~/.claude/.credentials.json."
 
-#: prefs.js:253 prefs.js:269 prefs.js:285 prefs.js:303 prefs.js:320
-#: prefs.js:337
+#: prefs.js:429 prefs.js:445 prefs.js:461 prefs.js:478
 msgid "Enabled"
 msgstr "Aktiviert"
 
-#: prefs.js:254
+#: prefs.js:430
 msgid "Credentials path"
 msgstr "Anmeldedaten-Pfad"
 
-#: prefs.js:262 prefs.js:266
+#: prefs.js:438 prefs.js:442
 msgid "OpenAI"
 msgstr "OpenAI"
 
-#: prefs.js:267
+#: prefs.js:443
 msgid "Codex auth path — empty uses ~/.codex/auth.json."
 msgstr "Codex-Authentifizierungspfad — leer verwendet ~/.codex/auth.json."
 
-#: prefs.js:270
+#: prefs.js:446
 msgid "Codex auth path"
 msgstr "Codex-Authentifizierungspfad"
 
-#: prefs.js:278 prefs.js:282
-msgid "Z.AI"
-msgstr "Z.AI"
+#: prefs.js:454 prefs.js:458
+msgid "OpenRouter"
+msgstr "OpenRouter"
 
-#: prefs.js:283 prefs.js:301
+#: prefs.js:459
 msgid "Set the API key inline or via the environment variable (env wins)."
 msgstr ""
 "API-Schlüssel direkt oder über die Umgebungsvariable festlegen (Umgebung hat "
 "Vorrang)."
 
-#: prefs.js:286 prefs.js:304 prefs.js:321 prefs.js:338
+#: prefs.js:462 prefs.js:479
 msgid "API key env var"
 msgstr "Umgebungsvariable des API-Schlüssels"
 
-#: prefs.js:287 prefs.js:305 prefs.js:322 prefs.js:339
+#: prefs.js:463 prefs.js:480
 msgid "API key (inline)"
 msgstr "API-Schlüssel (direkt)"
 
-#: prefs.js:288
-msgid "Plan tier (lite/pro/max)"
-msgstr "Plan-Stufe (lite/pro/max)"
-
-#: prefs.js:296 prefs.js:300
-msgid "OpenRouter"
-msgstr "OpenRouter"
-
-#: prefs.js:313 prefs.js:317
-msgid "DeepSeek"
-msgstr "DeepSeek"
-
-#: prefs.js:318 prefs.js:335
-msgid "Disabled by default; requires an API key (env var or inline)."
+#: prefs.js:471 prefs.js:475
+msgid "Gemini"
 msgstr ""
-"Standardmäßig deaktiviert; erfordert einen API-Schlüssel (Umgebungsvariable "
-"oder direkt)."
 
-#: prefs.js:330 prefs.js:334
-msgid "Kimi"
-msgstr "Kimi"
+#: prefs.js:476
+msgid ""
+"Enabled by default; automatically queries usage via the agy CLI or API key."
+msgstr ""
 
-#: prefs.js:365
+#: prefs.js:537
 msgid "Reset to default"
 msgstr "Auf Standard zurücksetzen"
 
-#: ui/indicator.js:108
-msgid "Refresh now"
-msgstr "Jetzt aktualisieren"
-
-#: ui/indicator.js:110
+#: ui/indicator.js:106
 msgid "Refresh all"
 msgstr "Alle aktualisieren"
 
-#: ui/indicator.js:112
+#: ui/indicator.js:108
 msgid "Preferences"
 msgstr "Einstellungen"
 
-#: ui/indicator.js:239
+#: ui/indicator.js:277
 msgid "No data — use \"Refresh all\""
 msgstr "Keine Daten — \"Alle aktualisieren\" verwenden"
 
-#: ui/indicator.js:262 ui/indicator.js:395
+#: ui/indicator.js:300 ui/indicator.js:405
 msgid "Loading…"
 msgstr "Wird geladen…"
+
+#, javascript-format
+#~ msgid "granted %s · topped-up %s"
+#~ msgstr "gewährt %s · aufgeladen %s"
+
+#~ msgid "API available"
+#~ msgstr "API verfügbar"
+
+#~ msgid "API unavailable"
+#~ msgstr "API nicht verfügbar"
+
+#~ msgid "Window (5h)"
+#~ msgstr "Fenster (5h)"
+
+#, javascript-format
+#~ msgid "Kimi %s"
+#~ msgstr "Kimi %s"
+
+#~ msgid "Session (5h)"
+#~ msgstr "Sitzung (5h)"
+
+#~ msgid "MCP tools (monthly)"
+#~ msgstr "MCP-Tools (monatlich)"
+
+#~ msgid "no usage windows reported"
+#~ msgstr "keine Nutzungsfenster gemeldet"
+
+#~ msgid "Display"
+#~ msgstr "Anzeige"
+
+#~ msgid "Primary vendor"
+#~ msgstr "Primärer Anbieter"
+
+#~ msgid "Shown by default and used as the scroll-cycle reset target"
+#~ msgstr ""
+#~ "Standardmäßig angezeigt und als Rücksetzziel beim Scrollen verwendet"
+
+#, javascript-format
+#~ msgid "Minimum %d s — the upstream endpoints rate-limit below that."
+#~ msgstr "Minimum %d s — die Upstream-Endpunkte drosseln darunter."
+
+#~ msgid "Z.AI"
+#~ msgstr "Z.AI"
+
+#~ msgid "Plan tier (lite/pro/max)"
+#~ msgstr "Plan-Stufe (lite/pro/max)"
+
+#~ msgid "DeepSeek"
+#~ msgstr "DeepSeek"
+
+#~ msgid "Disabled by default; requires an API key (env var or inline)."
+#~ msgstr ""
+#~ "Standardmäßig deaktiviert; erfordert einen API-Schlüssel "
+#~ "(Umgebungsvariable oder direkt)."
+
+#~ msgid "Kimi"
+#~ msgstr "Kimi"
+
+#~ msgid "Refresh now"
+#~ msgstr "Jetzt aktualisieren"

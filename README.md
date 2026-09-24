@@ -89,7 +89,10 @@ gear button in the popup footer). The prefs window exposes:
 - **Per-vendor enable** — toggle each of the six vendors on or off; only enabled
   vendors appear in the popup and the scroll cycle.
 - **Panel label format** (`bar-format`) — a template with `{token}` placeholders,
-  e.g. the default `{session_pct}% · {session_reset}`. The active vendor's
+  e.g. the default `{session_pct}% · {session_reset}`. Every vendor reports
+  `{session_pct}` / `{weekly_pct}` as the **consumed** share of the window (the
+  `*_used_pct` aliases are identical); use `{session_left_pct}` /
+  `{weekly_left_pct}` for what is still available. The active vendor's
   identity is shown as an SVG icon before the text; add the `{vendor_short}`
   token if you also want the textual short code (`cld`, `gpt`, …).
 - **Tooltip / extra rows format** (`tooltip-format`) — optional additive rows

@@ -24,7 +24,7 @@ describe('buildSection (openrouter)', () => {
             ['gauge', 'text', 'text', 'text', 'text', 'text', 'footer']);
         assertEqual(m.rows[0].title, 'Balance');
         assertEqual(m.rows[0].value, '$74.50');
-        assertEqual(m.rows[0].subLine, '$25.50 of $100.00 used (26%)');
+        assertEqual(m.rows[0].subLine, '$25.50 of $100.00 used (25.50%)');
         assertEqual(m.rows[1].text, 'Usage');
         assertEqual(m.rows[2].text, 'today $1.00 · week $7.00 · month $25.50');
         assertEqual(m.rows[3].text, 'Per-key limit');
@@ -57,7 +57,7 @@ describe('buildSection (openrouter) — injected translator', () => {
 
     it('routes the balance gauge title + sub-line', () => {
         assertEqual(m.rows[0].title, '«Balance»');
-        assertEqual(m.rows[0].subLine, '«$25.50 of $100.00 used (26%)»');
+        assertEqual(m.rows[0].subLine, '«$25.50 of $100.00 used (25.50%)»');
     });
 
     it('routes the usage block', () => {

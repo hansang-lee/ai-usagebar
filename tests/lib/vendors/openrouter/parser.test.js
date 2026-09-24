@@ -91,7 +91,8 @@ describe('placeholders', () => {
         assertEqual(m.get('or_used_today'), '$1.00');
         assertEqual(m.get('or_limit'), '$50.00');
         assertEqual(m.get('or_free_tier'), 'paid');
-        assertEqual(m.get('session_pct'), '26');
+        assertEqual(m.get('session_pct'), '25.50');
+        assertEqual(m.get('session_left_pct'), '74.50');
         assertEqual(m.get('session_reset'), '—');
     });
 
@@ -102,7 +103,7 @@ describe('placeholders', () => {
     });
 
     it('renders the shared cross-vendor format', () =>
-        assertEqual(substitute('{vendor_short} {session_pct}%', placeholders(snap, new Date())), 'opr 26%'));
+        assertEqual(substitute('{vendor_short} {session_pct}%', placeholders(snap, new Date())), 'opr 25.50%'));
 });
 
 describe('fakeSnapshot', () => {
