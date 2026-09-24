@@ -60,7 +60,7 @@ describe('ADAPTERS structure', () => {
 
 describe('getAdapter', () => {
     it('returns the adapter for a known id', () => {
-        assertEqual(getAdapter('zai'), ADAPTERS.zai);
+        assertEqual(getAdapter('gemini'), ADAPTERS.gemini);
     });
 
     it('falls back to anthropic for an unknown id', () => {

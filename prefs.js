@@ -141,10 +141,7 @@ export default class AiUsagebarPreferences extends ExtensionPreferences {
         window.add(this._buildGeneralPage(settings, cleanups));
         window.add(this._buildAnthropicPage(settings, cleanups));
         window.add(this._buildOpenAiPage(settings, cleanups));
-        window.add(this._buildZaiPage(settings, cleanups));
         window.add(this._buildOpenRouterPage(settings, cleanups));
-        window.add(this._buildDeepSeekPage(settings, cleanups));
-        window.add(this._buildKimiPage(settings, cleanups));
         window.add(this._buildGeminiPage(settings, cleanups));
 
         this._setupHeaderBar(window, settings);
@@ -314,6 +311,14 @@ export default class AiUsagebarPreferences extends ExtensionPreferences {
         notifyGroup.add(threshold);
         page.add(notifyGroup);
 
+        const enabledGroup = new Adw.PreferencesGroup({
+            title: _('Enabled Models'),
+            description: _('Choose which AI models to display in the top bar and popup menu.'),
+        });
+        for (const id of VENDOR_IDS)
+            enabledGroup.add(this._switchRow(settings, `${id}-enabled`, vendorLabel(id), cleanups));
+        page.add(enabledGroup);
+
         const resetGroup = new Adw.PreferencesGroup({
             title: _('Reset'),
             description: _('Restore every setting — vendor toggles, paths, keys, formats, and colors — to its built-in default.'),
@@ -444,24 +449,6 @@ export default class AiUsagebarPreferences extends ExtensionPreferences {
         return page;
     }
 
-    _buildZaiPage(settings, cleanups) {
-        const page = new Adw.PreferencesPage({
-            title: _('Z.AI'),
-            icon_name: 'ai-symbolic',
-        });
-        const group = new Adw.PreferencesGroup({
-            title: _('Z.AI'),
-            description: _('Set the API key inline or via the environment variable (env wins).'),
-        });
-        group.add(this._switchRow(settings, 'zai-enabled', _('Enabled'), cleanups));
-        group.add(this._entryRow(settings, 'zai-api-key-env', _('API key env var'), cleanups));
-        group.add(this._passwordRow(settings, 'zai-api-key', _('API key (inline)'), cleanups));
-        group.add(this._entryRow(settings, 'zai-plan-tier', _('Plan tier (lite/pro/max)'), cleanups));
-        group.add(this._vendorIntervalRow(settings, 'zai', cleanups));
-        page.add(group);
-        return page;
-    }
-
     _buildOpenRouterPage(settings, cleanups) {
         const page = new Adw.PreferencesPage({
             title: _('OpenRouter'),
@@ -475,40 +462,6 @@ export default class AiUsagebarPreferences extends ExtensionPreferences {
         group.add(this._entryRow(settings, 'openrouter-api-key-env', _('API key env var'), cleanups));
         group.add(this._passwordRow(settings, 'openrouter-api-key', _('API key (inline)'), cleanups));
         group.add(this._vendorIntervalRow(settings, 'openrouter', cleanups));
-        page.add(group);
-        return page;
-    }
-
-    _buildDeepSeekPage(settings, cleanups) {
-        const page = new Adw.PreferencesPage({
-            title: _('DeepSeek'),
-            icon_name: 'ai-symbolic',
-        });
-        const group = new Adw.PreferencesGroup({
-            title: _('DeepSeek'),
-            description: _('Disabled by default; requires an API key (env var or inline).'),
-        });
-        group.add(this._switchRow(settings, 'deepseek-enabled', _('Enabled'), cleanups));
-        group.add(this._entryRow(settings, 'deepseek-api-key-env', _('API key env var'), cleanups));
-        group.add(this._passwordRow(settings, 'deepseek-api-key', _('API key (inline)'), cleanups));
-        group.add(this._vendorIntervalRow(settings, 'deepseek', cleanups));
-        page.add(group);
-        return page;
-    }
-
-    _buildKimiPage(settings, cleanups) {
-        const page = new Adw.PreferencesPage({
-            title: _('Kimi'),
-            icon_name: 'ai-symbolic',
-        });
-        const group = new Adw.PreferencesGroup({
-            title: _('Kimi'),
-            description: _('Disabled by default; requires an API key (env var or inline).'),
-        });
-        group.add(this._switchRow(settings, 'kimi-enabled', _('Enabled'), cleanups));
-        group.add(this._entryRow(settings, 'kimi-api-key-env', _('API key env var'), cleanups));
-        group.add(this._passwordRow(settings, 'kimi-api-key', _('API key (inline)'), cleanups));
-        group.add(this._vendorIntervalRow(settings, 'kimi', cleanups));
         page.add(group);
         return page;
     }

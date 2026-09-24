@@ -57,13 +57,13 @@ describe('writeActiveVendorMirror', () => {
         const root = GLib.build_filenamev([dir, 'ai-usagebar']);
         GLib.mkdir_with_parents(root, 0o700);
 
-        writeActiveVendorMirror('zai');
+        writeActiveVendorMirror('gemini');
 
         const mirror = Gio.File.new_for_path(GLib.build_filenamev([root, 'active_vendor']));
         assertEqual(mirror.query_exists(null), true, 'mirror file should exist');
         const [ok, contents] = mirror.load_contents(null);
         assertEqual(ok, true);
-        assertEqual(bytesToString(contents), 'zai\n');
+        assertEqual(bytesToString(contents), 'gemini\n');
     }));
 
     it('does not create the file (and does not throw) when the cache root is absent', withTempCache((dir) => {

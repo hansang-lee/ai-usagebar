@@ -32,18 +32,6 @@ function vendorTag(id) {
     return getAdapter(id).vendorShort.toUpperCase();
 }
 
-function vendorSwitchLabel(id) {
-    switch (id) {
-    case 'anthropic': return 'Anthropic (Claude)';
-    case 'openai': return 'OpenAI (ChatGPT)';
-    case 'gemini': return 'Gemini';
-    case 'deepseek': return 'DeepSeek';
-    case 'kimi': return 'Kimi';
-    case 'openrouter': return 'OpenRouter';
-    case 'zai': return 'Z.AI';
-    default: return vendorLabel(id);
-    }
-}
 
 export const Indicator = GObject.registerClass(
 class Indicator extends PanelMenu.Button {
@@ -104,12 +92,9 @@ class Indicator extends PanelMenu.Button {
         // Footer is a single non-reactive row of icon-only action buttons
         // (handlers connected once); per-vendor sub-sections are inserted above
         // the separator on (re)build. A lazily-created tooltip label (shared by
-        // all three buttons) lives in the uiGroup and is torn down in destroy().
+        // all buttons) lives in the uiGroup and is torn down in destroy().
         this._tooltip = null;
         this._tooltipTimeoutId = null;
-        this._manageItem = null;
-        this._vendorSwitches = new Map();
-        this._buildManageSection(this._config);
         this._separator = new PopupMenu.PopupSeparatorMenuItem();
         this.menu.addMenuItem(this._separator);
         this._actionsItem = new PopupMenu.PopupBaseMenuItem({reactive: false, can_focus: false});
@@ -203,7 +188,6 @@ class Indicator extends PanelMenu.Button {
         const enabledChanged = this._enabledSignature(config) !== this._enabledSig;
 
         this._maybeRebuildVendorSections(config);
-        this._syncManageSwitches(config);
 
         if (activeChanged || enabledChanged) {
             this._rearmVendorPollTimers(config);
@@ -230,53 +214,6 @@ class Indicator extends PanelMenu.Button {
     _maybeRebuildVendorSections(config) {
         if (this._enabledSignature(config) !== this._enabledSig)
             this._rebuildVendorSections(config);
-    }
-
-    _buildManageSection(config) {
-        this._manageItem = new PopupMenu.PopupSubMenuMenuItem(_('Select visible AI'), true);
-        this._manageItem.icon.icon_name = 'checkbox-checked-symbolic';
-        this._vendorSwitches = new Map();
-
-        VENDOR_IDS.forEach(id => {
-            const active = isEnabled(config, id);
-            const switchItem = new PopupMenu.PopupSwitchMenuItem(vendorSwitchLabel(id), active);
-            const icon = new St.Icon({
-                gicon: this._vendorGicon(),
-                style_class: 'popup-menu-icon',
-                y_align: Clutter.ActorAlign.CENTER,
-            });
-            switchItem.insert_child_at_index(icon, 0);
-
-            // Prevent menu from closing on toggle click
-            switchItem.activate = function (_event) {
-                this.toggle();
-            };
-
-            switchItem.connect('toggled', (_item, state) => {
-                if (this._destroyed)
-                    return;
-                if (state)
-                    this._expandedVendors?.add(id);
-                else
-                    this._expandedVendors?.delete(id);
-                this._settings.set_boolean(`${id}-enabled`, state);
-            });
-
-            this._manageItem.menu.addMenuItem(switchItem);
-            this._vendorSwitches.set(id, switchItem);
-        });
-
-        this.menu.addMenuItem(this._manageItem);
-    }
-
-    _syncManageSwitches(config) {
-        if (!this._vendorSwitches)
-            return;
-        for (const [id, switchItem] of this._vendorSwitches) {
-            const active = isEnabled(config, id);
-            if (switchItem.state !== active)
-                switchItem.setToggleState(active);
-        }
     }
 
     _rebuildVendorSections(config) {
@@ -760,11 +697,6 @@ class Indicator extends PanelMenu.Button {
         this._expandedVendors?.clear();
         this._results.clear();
         this._fetchedAt.clear();
-        this._vendorSwitches?.clear();
-        if (this._manageItem) {
-            this._manageItem.destroy();
-            this._manageItem = null;
-        }
 
         this.menu?.removeAll();
 
