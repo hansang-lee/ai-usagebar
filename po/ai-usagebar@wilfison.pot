@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ai-usagebar@wilfison\n"
 "Report-Msgid-Bugs-To: https://github.com/wilfison/ai-usagebar/issues\n"
-"POT-Creation-Date: 2026-09-25 00:45+0900\n"
+"POT-Creation-Date: 2026-09-25 00:59+0900\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -42,115 +42,115 @@ msgstr ""
 msgid "Usage at %d%%"
 msgstr ""
 
-#: lib/vendors/anthropic/section.js:29 lib/vendors/gemini/section.js:26
-#: lib/vendors/openai/section.js:24
+#: lib/vendors/anthropic/section.js:30 lib/vendors/gemini/section.js:27
+#: lib/vendors/openai/section.js:25
 #, javascript-format
 msgid "Resets in %s"
 msgstr ""
 
-#: lib/vendors/anthropic/section.js:43 lib/vendors/gemini/section.js:36
+#: lib/vendors/anthropic/section.js:44 lib/vendors/gemini/section.js:37
 msgid "Session"
 msgstr ""
 
-#: lib/vendors/anthropic/section.js:50 lib/vendors/gemini/section.js:39
+#: lib/vendors/anthropic/section.js:51 lib/vendors/gemini/section.js:40
 msgid "Weekly"
 msgstr ""
 
-#: lib/vendors/anthropic/section.js:52
+#: lib/vendors/anthropic/section.js:53
 msgid "Sonnet only"
 msgstr ""
 
-#: lib/vendors/anthropic/section.js:65
+#: lib/vendors/anthropic/section.js:66
 msgid "Extra usage"
 msgstr ""
 
-#: lib/vendors/anthropic/section.js:68
+#: lib/vendors/anthropic/section.js:69
 #, javascript-format
 msgid "Limit: %s"
 msgstr ""
 
 #. Translators: %s is the Anthropic plan name (e.g. "Max 5x") — kept verbatim.
-#: lib/vendors/anthropic/section.js:80
+#: lib/vendors/anthropic/section.js:81
 #, javascript-format
 msgid "Claude %s"
 msgstr ""
 
-#: lib/vendors/gemini/section.js:45
+#: lib/vendors/gemini/section.js:46
 msgid "Google One AI Premium (Gemini Advanced)"
 msgstr ""
 
-#: lib/vendors/openai/section.js:34
+#: lib/vendors/openai/section.js:35
 msgid "Codex 5h"
 msgstr ""
 
-#: lib/vendors/openai/section.js:35
+#: lib/vendors/openai/section.js:36
 msgid "Codex weekly"
 msgstr ""
 
-#: lib/vendors/openai/section.js:37
+#: lib/vendors/openai/section.js:38
 msgid "Code review (weekly)"
 msgstr ""
 
-#: lib/vendors/openai/section.js:41
+#: lib/vendors/openai/section.js:42
 msgid "Credits"
 msgstr ""
 
-#: lib/vendors/openai/section.js:42
+#: lib/vendors/openai/section.js:43
 #, javascript-format
 msgid "balance: %s"
 msgstr ""
 
-#: lib/vendors/openai/section.js:42
+#: lib/vendors/openai/section.js:43
 msgid "unlimited"
 msgstr ""
 
 #. Translators: %s-%s is an approximate count range (e.g. "100-200").
-#: lib/vendors/openai/section.js:45
+#: lib/vendors/openai/section.js:46
 #, javascript-format
 msgid "~ %s-%s local messages"
 msgstr ""
 
 #. Translators: %s-%s is an approximate count range (e.g. "30-50").
-#: lib/vendors/openai/section.js:48
+#: lib/vendors/openai/section.js:49
 #, javascript-format
 msgid "~ %s-%s cloud messages"
 msgstr ""
 
-#: lib/vendors/openrouter/section.js:18
+#: lib/vendors/openrouter/section.js:19
 msgid "Balance"
 msgstr ""
 
 #. Translators: %s are money amounts, %s%% is the consumed percentage.
-#: lib/vendors/openrouter/section.js:22
+#: lib/vendors/openrouter/section.js:23
 #, javascript-format
 msgid "%s of %s used (%s%%)"
 msgstr ""
 
-#: lib/vendors/openrouter/section.js:27
+#: lib/vendors/openrouter/section.js:28
 msgid "Usage"
 msgstr ""
 
 #. Translators: %s are money amounts for the day, week and month to date.
-#: lib/vendors/openrouter/section.js:31
+#: lib/vendors/openrouter/section.js:32
 #, javascript-format
 msgid "today %s · week %s · month %s"
 msgstr ""
 
-#: lib/vendors/openrouter/section.js:38
+#: lib/vendors/openrouter/section.js:39
 msgid "Per-key limit"
 msgstr ""
 
 #. Translators: %s are money amounts (remaining of limit).
-#: lib/vendors/openrouter/section.js:42
+#: lib/vendors/openrouter/section.js:43
 #, javascript-format
 msgid "%s of %s remaining"
 msgstr ""
 
-#: lib/vendors/openrouter/section.js:47
+#: lib/vendors/openrouter/section.js:48
 msgid "free tier"
 msgstr ""
 
-#: lib/vendors/openrouter/section.js:47
+#: lib/vendors/openrouter/section.js:48
 msgid "paid tier"
 msgstr ""
 
@@ -227,8 +227,8 @@ msgstr ""
 
 #: prefs.js:255
 msgid ""
-"Placeholders ({session_pct} is the consumed share; use {session_left_pct} "
-"for what is left): {vendor_short} {session_pct}% {session_reset} {plan} "
+"Placeholders ({session_pct} is the remaining share; use {session_used_pct} "
+"for consumed): {vendor_short} {session_pct}% {session_reset} {plan} "
 "{weekly_pct} {weekly_reset}"
 msgstr ""
 
@@ -243,9 +243,9 @@ msgstr ""
 #: prefs.js:263
 msgid ""
 "Optional extra lines shown above the popup. Empty uses the built-in layout. "
-"Placeholders ({session_pct} is the consumed share): {plan} {session_pct} "
-"{session_reset} {weekly_pct} {weekly_reset} {session_left_pct} "
-"{weekly_left_pct}"
+"Placeholders ({session_pct} is the remaining share): {plan} {session_pct} "
+"{session_reset} {weekly_pct} {weekly_reset} {session_used_pct} "
+"{weekly_used_pct}"
 msgstr ""
 
 #: prefs.js:265

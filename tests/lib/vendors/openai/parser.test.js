@@ -108,15 +108,16 @@ describe('placeholders', () => {
     it('renders the shared cross-vendor format', () => {
         const s = parseUsage(REAL, null);
         assertEqual(substitute('{vendor_short} {session_pct}% · {session_reset}', placeholders(s, now)),
-            `gpt 1.00% · ${placeholders(s, now).get('session_reset')}`);
+            `gpt 99.00% · ${placeholders(s, now).get('session_reset')}`);
     });
 
     it('emits the oai_* family with credit balance n/a when absent', () => {
         const m = placeholders(parseUsage(REAL, null), now);
         assertEqual(m.get('oai_plan'), 'ChatGPT Plus');
-        assertEqual(m.get('oai_session_pct'), '1.00');
-        assertEqual(m.get('oai_code_review_pct'), '0.00');
+        assertEqual(m.get('oai_session_pct'), '99.00');
+        assertEqual(m.get('oai_code_review_pct'), '100.00');
         assertEqual(m.get('session_left_pct'), '99.00');
+        assertEqual(m.get('session_used_pct'), '1.00');
         assertEqual(m.get('oai_credit_balance'), 'n/a');
         assertEqual(m.get('oai_local_msgs'), '');
     });

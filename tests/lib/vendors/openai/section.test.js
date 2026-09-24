@@ -33,6 +33,9 @@ describe('buildSection (openai)', () => {
         assertDeepEqual(m.rows.map(r => r.kind), ['window', 'window', 'footer']);
         assertEqual(m.rows[0].title, 'Codex 5h');
         assertEqual(m.rows[1].title, 'Codex weekly');
+        // pct fills the bar — remaining capacity, not consumed usage.
+        assertEqual(m.rows[0].pct, 99);
+        assertEqual(m.rows[1].pct, 100);
     });
 
     it('adds a code-review window when present', () => {

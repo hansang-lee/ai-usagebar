@@ -252,7 +252,7 @@ export default class AiUsagebarPreferences extends ExtensionPreferences {
 
         const labelGroup = new Adw.PreferencesGroup({
             title: _('Panel label'),
-            description: _('Placeholders ({session_pct} is the consumed share; use {session_left_pct} for what is left): {vendor_short} {session_pct}% {session_reset} {plan} {weekly_pct} {weekly_reset}'),
+            description: _('Placeholders ({session_pct} is the remaining share; use {session_used_pct} for consumed): {vendor_short} {session_pct}% {session_reset} {plan} {weekly_pct} {weekly_reset}'),
         });
         const barFormat = this._entryRow(settings, 'bar-format', _('Bar format'), cleanups);
         labelGroup.add(barFormat);
@@ -260,7 +260,7 @@ export default class AiUsagebarPreferences extends ExtensionPreferences {
 
         const popupGroup = new Adw.PreferencesGroup({
             title: _('Popup'),
-            description: _('Optional extra lines shown above the popup. Empty uses the built-in layout. Placeholders ({session_pct} is the consumed share): {plan} {session_pct} {session_reset} {weekly_pct} {weekly_reset} {session_left_pct} {weekly_left_pct}'),
+            description: _('Optional extra lines shown above the popup. Empty uses the built-in layout. Placeholders ({session_pct} is the remaining share): {plan} {session_pct} {session_reset} {weekly_pct} {weekly_reset} {session_used_pct} {weekly_used_pct}'),
         });
         popupGroup.add(this._entryRow(settings, 'tooltip-format', _('Popup format'), cleanups));
         popupGroup.add(this._switchRow(settings, 'show-pace-marker', _('Show pace marker'), cleanups));

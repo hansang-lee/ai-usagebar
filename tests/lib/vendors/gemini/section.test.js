@@ -28,15 +28,15 @@ function snapshot(sessionPct, weeklyPct) {
 }
 
 describe('buildSection (gemini)', () => {
-    it('reports windows as used percentage, not remaining', () => {
+    it('reports windows as remaining percentage, not used', () => {
         const rows = buildSection(snapshot(98.05, 30.9), meta, NOW, theme).rows;
         assertEqual(rows[0].title, 'Session');
-        assertEqual(rows[0].pct, 98.05);
+        assertEqual(Math.round(rows[0].pct * 100) / 100, 1.95);
         assertEqual(rows[1].title, 'Weekly');
-        assertEqual(rows[1].pct, 30.9);
+        assertEqual(rows[1].pct, 69.1);
     });
 
-    it('colors each bar from its own usage', () => {
+    it('colors each bar from its own usage, not the displayed remaining pct', () => {
         const rows = buildSection(snapshot(98.05, 30.9), meta, NOW, theme).rows;
         assertEqual(rows[0].color, theme.red);
         assertEqual(rows[1].color, theme.green);
