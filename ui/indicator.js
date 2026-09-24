@@ -546,6 +546,9 @@ class Indicator extends PanelMenu.Button {
 
 
     _onPopupOpen() {
+        // Every open starts fully expanded; a collapse only lasts until the popup closes.
+        for (const id of enabledVendors(this._config))
+            this._expandedVendors.add(id);
         for (const [id, item] of this._vendorItems) {
             const want = this._expandedVendors.has(id);
             if (item.menu.isOpen !== want)
