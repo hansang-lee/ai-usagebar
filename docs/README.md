@@ -16,11 +16,12 @@ they are; owner-specific additions are kept small and separate.
 | Doc | What it holds |
 |---|---|
 | `docs/README.md` | this index and the exceptions below |
+| `docs/conventions.md` | the owner's shared conventions, this fork's copy (synced from `~/.claude/project-conventions.md`) |
 | `README.md` | what the extension is and how to install it (upstream's) |
 | `CLAUDE.md` | agent guide: architecture, commands, testing rules (upstream's, plus a short owner section) |
 | `CHANGELOG.md` | released changes (upstream's format) |
 
-## Exceptions to ~/.claude/project-conventions.md
+## Exceptions to conventions.md
 
 Why: this is a fork. Renaming or moving upstream files would make every
 upstream merge conflict, so the conventions are applied only where they do not

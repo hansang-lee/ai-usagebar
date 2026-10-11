@@ -258,6 +258,6 @@ not-testable is the `gi://` import line:
 
 ## Owner's conventions (fork)
 
-This fork follows `~/.claude/project-conventions.md` only where upstream's
+This fork follows `docs/conventions.md` only where upstream's
 layout is unaffected. The exceptions and their reasons are in
 [`docs/README.md`](docs/README.md).
