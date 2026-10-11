@@ -255,3 +255,9 @@ not-testable is the `gi://` import line:
 - **Never fake a test result.** If something genuinely cannot be tested in the
   current environment (e.g. no live Claude/OpenRouter credentials), say so
   explicitly — do not claim "verified" based on code reading alone.
+
+## Owner's conventions (fork)
+
+This fork follows `~/.claude/project-conventions.md` only where upstream's
+layout is unaffected. The exceptions and their reasons are in
+[`docs/README.md`](docs/README.md).
