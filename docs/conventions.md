@@ -167,3 +167,21 @@ to say is left out):
 Docs, code, comments, commit messages and script output are in English.
 The owner is answered in Korean. Korean in the product (UI strings,
 content) stays Korean.
+
+## 10. Where these come from
+
+Kept so a later change can be weighed against the reason a rule exists.
+
+| Rule | Source |
+|---|---|
+| Docs live in the repo, change with the code, stale docs deleted (§3) | Google documentation guide ("docs as code") |
+| One kind of document per file: how-to, reference, record (§3) | Diátaxis |
+| Lowercase-hyphen file names (§1) | Google developer documentation style guide |
+| Bash: `set -euo pipefail`, 2-space indent, header comment (§4) | Google Shell Style Guide; shellcheck |
+| `type(scope): subject`, ≤ 72 characters, why in the body (§7) | Conventional Commits; the git project's commit guidance |
+| Decisions as dated, never-rewritten rows (§3) | Architecture Decision Records, kept as one table |
+| Formatters per language (§6) | gofmt, Dart/Flutter lints, clang-format, ESLint, ruff — each language's own |
+| `.editorconfig`, `.env.example` committed with placeholders (§2) | common open-source practice |
+| plan/decisions/history, `out/<stamp>/` runs, export/import scripts (§3, §4) | the owner's projects (cling, kairos), 2026-09/10 |
+| Width 120 (§6) | the existing code; Google's guides use 80–100 |
+
