@@ -112,6 +112,11 @@ archive, restored without overwriting unless `--force` (old copies moved to
 
 - `scripts/test/check.sh` is what CI would run (format check, lint/analyze,
   the fast tests) and ends with one line: `All checks passed.` or a failure.
+- `check.sh` also refuses a real-looking secret (a private key, a known
+  token prefix, a JWT, a long key-like string, an account number) in any
+  committed `.env*.example`, commented lines included; a deliberate example
+  ends with `# example-ok`. cling's `scripts/test/env_example_check.py` is
+  the reference implementation, copied as is.
 - `.githooks/pre-push` runs it; a docs-only push may skip it. Never push with
   `--no-verify`.
 - Test layers are named by what they exercise (unit, widget, scenario …)
